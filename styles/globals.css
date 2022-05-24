@@ -1,0 +1,90 @@
+html,
+body {
+  min-height: 100%;
+  background-color: #ffffff;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+* {
+  padding: 0;
+  margin: 0;
+  color: #1a1f36;
+  box-sizing: border-box;
+  word-wrap: break-word;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto,
+    Helvetica Neue, Ubuntu, sans-serif;
+}
+
+.container {
+  width: 90%;
+  max-width: 45rem;
+  padding: 20px;
+  margin: 40px auto;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  margin: "15px 0";
+  width: 100%;
+}
+
+.form-field label {
+  font-size: 0.8rem;
+  font-weight: bold;
+  margin-top: 5px;
+}
+
+.form-field input {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.form-field select {
+  width: 100%;
+  padding: 12px 20px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.button {
+  padding: 15px 32px;
+  background-color: transparent;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 20px;
+  transition-duration: 0.4s;
+  margin: 10px 0;
+  margin-right: 15px;
+}
+
+.primary {
+  border: 2px solid blue;
+  color: blue;
+}
+
+.danger {
+  border: 2px solid red;
+  color: red;
+}
+
+.primary:hover {
+  background-color: blue; /* Green */
+  color: white;
+}
+
+.danger:hover {
+  background-color: red;
+  color: white;
+}
