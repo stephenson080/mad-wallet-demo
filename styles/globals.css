@@ -58,12 +58,12 @@ a {
 }
 
 .button {
-  padding: 15px 32px;
+  padding: 15px 10px;
   background-color: transparent;
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  font-size: 20px;
+  font-size: 16px;
   transition-duration: 0.4s;
   margin: 10px 0;
   margin-right: 15px;
@@ -88,3 +88,12 @@ a {
   background-color: red;
   color: white;
 }
+
+.order-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  width: 100%;
+  margin: 15px 20px
+}
+

@@ -1,67 +1,133 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useRouter } from "next/router";
 import Nav from "../../../components/Nav";
-import { getButRate, getUserBanks, getSellRate, initOrder } from "../../../store/actions";
-import { OrderType, AppState } from "../../../store/constants";
-
-
+import {
+  getButRate,
+  getUserBanks,
+  getSellRate,
+  initOrder,
+  autoAuth,
+  getCurrencies,
+} from "../../../store/actions";
+import { OrderType, AppState, Currency } from "../../../store/constants";
 
 export interface OrderState {
   amount: string;
-  orderType: string | OrderType
+  orderType: string | OrderType;
   walletAddress: string;
   bankId: string;
-  cash: string;
+  payInCurrency: string;
+  receiveInCurrency: string;
+  rate: string;
 }
 export default function BuyBUSD() {
   const [state, setState] = useState<OrderState>({
     amount: "",
-    orderType: '',
+    orderType: "",
     walletAddress: "",
     bankId: "",
-    cash: "",
+    payInCurrency: "",
+    receiveInCurrency: "",
+    rate: "",
   });
-  const [loading, setLoading] = useState(false);
+  const [fiatCurrs, setFiatCurr] = useState<Currency[]>([]);
+  const [crytoCurrs, setCrytoCurr] = useState<Currency[]>([]);
+  const [payInCurrs, setPayInCurrs] = useState<Currency[]>([]);
+  const [receiveCurrs, setReceiveInCurrs] = useState<Currency[]>([]);
 
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
   const dispatch = useDispatch();
   const banks = useSelector((state: AppState) => state.banks);
+  const user = useSelector((state: AppState) => state.user);
+
+  useEffect(() => {
+    if (user) {
+      return;
+    }
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      router.replace("/register");
+      return;
+    }
+    autoAuthFn(userId);
+  }, [user]);
+
+  function autoAuthFn(userId: string) {
+    try {
+      dispatch(autoAuth(userId, setLoading));
+    } catch (error: any) {
+      alert(error.message);
+    }
+  }
 
   function getBanks() {
     dispatch(getUserBanks(setLoading));
   }
 
   useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      router.replace("/register");
+      return;
+    }
     getBanks();
+    getCurrenciesFn()
   }, []);
 
-  async function getBuyRateFn(amountInNGN: string) {
+  async function getCurrenciesFn() {
     try {
-      if (amountInNGN === "") {
-        return;
-      }
-      const resData = await getButRate(amountInNGN);
-      console.log(resData);
-      const busdAmount = parseFloat((+state.cash / resData.exchangeRate).toString()).toFixed(2);
-      setState({
-        ...state,
-        amount: busdAmount
-      })
+      const fiat = await getCurrencies("1");
+      const cryto = await getCurrencies("2");
+      setFiatCurr(fiat);
+      setCrytoCurr(cryto);
     } catch (error: any) {
       alert(error.message);
     }
   }
 
-  async function getSellRateFn(amountInBUSD: string) {
+  async function getBuyRateFn(amountInNGN: string) {
     try {
-      if (amountInBUSD === "") {
-        return;
-      }
-      const resData = await getSellRate(amountInBUSD);
-      const nairaAmount = parseFloat((+state.amount * resData.exchangeRate).toString()).toFixed(2);
+      const resData = await getButRate(amountInNGN);
       setState({
         ...state,
-        cash: nairaAmount
-      })
+        rate: resData.exchangeRate,
+      });
+    } catch (error: any) {
+      alert(error.message);
+    }
+  }
+
+  function orderTypeOnBlurhandler() {
+    if (state.orderType === "") {
+      setPayInCurrs([]);
+      setReceiveInCurrs([]);
+    setState({
+      ...state,
+      rate: "",
+    })
+      return;
+    }
+    if (state.orderType === "1") {
+      console.log('buy', fiatCurrs, crytoCurrs)
+      getBuyRateFn("1000");
+      setPayInCurrs([...fiatCurrs]);
+      setReceiveInCurrs([...crytoCurrs]);
+      return;
+    }
+    getSellRateFn("1000");
+    setPayInCurrs([...crytoCurrs]);
+    setReceiveInCurrs([...fiatCurrs]);
+  }
+
+  async function getSellRateFn(amountInBUSD: string) {
+    try {
+      const resData = await getSellRate(amountInBUSD);
+      setState({
+        ...state,
+        rate: resData.exchangeRate,
+      });
     } catch (error: any) {
       alert(error.message);
     }
@@ -69,19 +135,19 @@ export default function BuyBUSD() {
 
   function initiateOrderFn() {
     try {
-      console.log(state)
-      dispatch(initOrder(state, setLoading))
+      console.log(state);
+      dispatch(initOrder(state, setLoading));
     } catch (error: any) {
       alert(error.message);
     }
   }
   return (
     <>
-      <Nav page = 'orders' />
+      <Nav page="orders" />
       <div className="container">
         <div>
           <p style={{ marginBottom: "30px" }}>
-            Fill the form to initiate a buy order
+            Fill the form to initiate an order
           </p>
           <form
             style={{
@@ -92,16 +158,50 @@ export default function BuyBUSD() {
               <label>Order Type</label>
               <select
                 value={state.orderType}
+                onChange = {(e) => setState({...state, orderType: e.target.value})}
+                onBlur={orderTypeOnBlurhandler}
+              >
+                <option value="">Select Order type</option>
+                <option value="1">BUY ORDER</option>
+                <option value="2">SELL ORDER</option>
+              </select>
+            </div>
+            <div className="form-field">
+              <label>Buy Currency</label>
+              <select
+                value={state.payInCurrency}
                 onChange={(e) =>
                   setState({
                     ...state,
-                    orderType: e.target.value,
+                    payInCurrency: e.target.value,
                   })
                 }
               >
-                <option value="">Select Order type</option>
-                <option value='1'>BUY ORDER</option>
-                <option value='2'>SELL ORDER</option>
+                <option value="">Select Currency</option>
+                {
+                  payInCurrs.map((curr, index) => (
+                    <option key={index} value={curr.id}>{curr.name}</option>
+                  ))
+                }
+              </select>
+            </div>
+            <div className="form-field">
+              <label>Sell Currency</label>
+              <select
+                value={state.receiveInCurrency}
+                onChange={(e) =>
+                  setState({
+                    ...state,
+                    receiveInCurrency: e.target.value,
+                  })
+                }
+              >
+                <option value="">Select Currency</option>
+                {
+                  receiveCurrs.map((curr, index) => (
+                    <option key={index} value={curr.id}>{curr.name}</option>
+                  ))
+                }
               </select>
             </div>
             <div className="form-field">
@@ -126,23 +226,19 @@ export default function BuyBUSD() {
               </select>
             </div>
             <div className="form-field">
-              <label>Amount (Naira)</label>
+              <label>
+                Amount to{" "}
+                {state.orderType === "1"
+                  ? "Buy"
+                  : state.orderType === "2"
+                  ? "Sell"
+                  : "..."}
+              </label>
               <input
-                disabled = {state.orderType === '' || state.orderType === '2' ?  true : false}
-                value={state.cash}
-                onChange={(e) => setState({ ...state, cash: e.target.value })}
-                onBlur={() => getBuyRateFn(state.cash)}
-              />
-            </div>
-            <div className="form-field">
-              <label>Amount (BUSD)</label>
-              <input
-                disabled = {state.orderType === '' || state.orderType === '1' ?  true : false}
                 value={state.amount}
                 onChange={(e) => setState({ ...state, amount: e.target.value })}
-                onBlur={() => getSellRateFn(state.amount)}
               />
-              <p style={{fontSize: "15px", color: 'blue'}}>Minimum Amount of BUSD to buy or sell: 5 and max: 100000</p>
+              <p>Rate is: {state.rate}</p>
             </div>
             <div className="form-field">
               <label>Wallet Address</label>
@@ -153,7 +249,18 @@ export default function BuyBUSD() {
                 }
               />
             </div>
-            <button type="button" onClick={initiateOrderFn} disabled = {!state.bankId || !state.walletAddress || !state.orderType ? true : false} className="button primary">{loading ? "Initiating Order..." : "Initiate Order"}</button>
+            <button
+              type="button"
+              onClick={initiateOrderFn}
+              disabled={
+                !state.bankId || !state.walletAddress || !state.orderType
+                  ? true
+                  : false
+              }
+              className="button primary"
+            >
+              {loading ? "Please Wait..." : "Initiate Order"}
+            </button>
           </form>
         </div>
       </div>

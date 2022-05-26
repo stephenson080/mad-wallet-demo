@@ -1,0 +1,30 @@
+{
+    "data": {
+        "xend_bridge_user_id": 5,
+        "bank_detail_id": 2,
+        "customer_email": "pathtech@gmail.com",
+        "order_type": 1,
+        "transaction_ref": "MWB_1653417733201463344",
+        "xend_bridge_transaction_ref": "XB_ffa57b3549fe4d66bf2fc95ceca1a4ee1qwq2",
+        "pay_in_currency_code": 1,
+        "receive_in_currency_code": 6,
+        "order_amount": 5,
+        "receivable_amount": 0.01678335,
+        "wallet_address": "0x179DF51113BC55738374386ecd1A3331a5c0EF31",
+        "network": 1,
+        "initiated_at_timestamp": 1653407235091,
+        "order_expiry_timestamp": 1653408135091,
+        "provider_name": "John Doe",
+        "provider_email": "owolabidamilola98@gmail.com",
+        "provider_phone_no": "2348181186644",
+        "order_status": 1,
+        "dispute_status": 1,
+        "dispute_reference": "",
+        "transaction_hash": "",
+        "deposit_method": 1,
+        "receipient_method": 2,
+        "created_at": "2022-05-24T21:42:42.790+03:00",
+        "updated_at": "2022-05-24T21:42:42.791+03:00",
+        "id": 7
+    }
+}

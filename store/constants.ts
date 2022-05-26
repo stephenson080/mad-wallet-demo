@@ -19,6 +19,30 @@ export enum ErrorType {
   NONE,
   ERROR,
 }
+
+export type Currency = {
+  id: number;
+  name: string;
+  type: string;
+}
+type OrderDetails = {
+  trasactionRef: string;
+  xb_transactionRef: string;
+  payInCurr: number
+  receiveInCurr: number
+  receiveAmount: number
+  wallet: string
+}
+
+export interface Order {
+  id: number;
+  email: string;
+  orderAmount: number;
+  userId: number;
+  bankId: number;
+  orderType: number
+  details: OrderDetails;
+} 
 export enum OrderType {
   NONE, BUY, SELL
 }

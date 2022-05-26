@@ -7,7 +7,7 @@ import Modal from "../../components/Modal";
 import Nav from "../../components/Nav";
 import Bank from "../../models/bank";
 
-import { addBank, getUserBanks, editBank } from "../../store/actions";
+import { addBank, getUserBanks, editBank, autoAuth } from "../../store/actions";
 import { AppState } from "../../store/constants";
 
 export interface BankState {
@@ -23,21 +23,45 @@ export default function BankDetails() {
   });
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [editBankFlag, setEditBank] = useState(false)
-  const [currentBankId, setCurrentBankId] = useState(-1)
+  const [editBankFlag, setEditBank] = useState(false);
+  const [currentBankId, setCurrentBankId] = useState(-1);
   const dispatch = useDispatch();
-  const banks = useSelector((state: AppState) => state.banks)
+  const banks = useSelector((state: AppState) => state.banks);
+  const user = useSelector((state: AppState) => state.user);
   const router = useRouter();
 
   useEffect(() => {
-      try {
-          dispatch(getUserBanks(setLoading))
-      } catch (error) {
-          console.log(error);
-      }
-          
-  }, [])
+    if (user) {
+      return;
+    }
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      router.replace("/register");
+      return;
+    }
+    autoAuthFn(userId);
+  }, [user]);
 
+  function autoAuthFn(userId: string) {
+    try {
+      dispatch(autoAuth(userId, setLoading));
+    } catch (error: any) {
+      alert(error.message);
+    }
+  }
+
+  useEffect(() => {
+    try {
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        router.replace("/register");
+        return;
+      }
+      dispatch(getUserBanks(setLoading));
+    } catch (error) {
+      console.log(error);
+    }
+  }, []);
 
   async function addBankFn() {
     try {
@@ -58,16 +82,16 @@ export default function BankDetails() {
   function initEditBank(bank: Bank) {
     setShow(true);
     setEditBank(true);
-    setCurrentBankId(bank.id!)
+    setCurrentBankId(bank.id!);
     setState({
-        accountName: bank.accountName,
-        bankName: bank.bankName,
-        accountNumber: bank.accountNumber,
-    })
+      accountName: bank.accountName,
+      bankName: bank.bankName,
+      accountNumber: bank.accountNumber,
+    });
   }
   return (
     <>
-      <Nav page = 'banks' />
+      <Nav page="banks" />
       <Modal
         loading={loading}
         onSubmit={editBankFlag ? editBankFn : addBankFn}
@@ -76,7 +100,9 @@ export default function BankDetails() {
         title={editBankFlag ? "Edit Bank" : "Add new Bank"}
       >
         <div>
-          <p style={{ marginBottom: "30px" }}>Fill the form to {editBankFlag ? "Edit" : "Add"} bank</p>
+          <p style={{ marginBottom: "30px" }}>
+            Fill the form to {editBankFlag ? "Edit" : "Add"} bank
+          </p>
           <form
             style={{
               width: "100%",
@@ -133,14 +159,14 @@ export default function BankDetails() {
             }}
             disabled={loading}
             onClick={() => {
-                setShow(true)
-                setEditBank(false)
+              setShow(true);
+              setEditBank(false);
             }}
           >
             {loading ? "Please Wait" : "Add Bank"}
           </button>
         </div>
-        <Banks initEditBank={initEditBank} banks = {banks}/>
+        <Banks initEditBank={initEditBank} banks={banks} />
       </div>
     </>
   );

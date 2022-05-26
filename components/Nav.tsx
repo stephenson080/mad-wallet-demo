@@ -19,11 +19,10 @@ export default function Nav(props : Props) {
         </button>
         <div className="dropdown-content">
           <Link href={`/user/orders/initiate-order`}><a href="/user/orders/initiate-order">Initiate Buy or Send</a></Link>
-          <Link href = {`/user/orders/pending-orders`}><a href="/user/orders/pending-orders">Pending Order</a></Link>
+          <Link href = {`/user/orders/transactions`}><a href="/user/orders/transactions">My Transactions</a></Link>
         </div>
       </div>
       <Link href={`/user/bank`}><a className={props.page === 'banks' ? 'active': ''} href="/user/bank">My Bank</a></Link>
-      <a className={props.page === 'transactions' ? 'active': ''} href="#about">Transactions</a>
     </div>
   );
 }
