@@ -2,9 +2,10 @@ type Prop = {
     show: boolean,
     title: string,
     closeModal: () => void
-    onSubmit: () => void
+    onSubmit?: () => void
     loading: boolean
-    children: any
+    children: any,
+    dontShowSubmitBtn? : boolean
 }
 export default function Modal(props: Prop) {
   return (
@@ -19,8 +20,8 @@ export default function Modal(props: Prop) {
         </div>
         <div className="modal-footer">
           <div style={{marginLeft: 'auto'}}>
-              <button className="button primary" disabled = {props.loading} onClick = {props.closeModal}>Cancel</button>
-              <button className="button danger" disabled = {props.loading} onClick={props.onSubmit}>{props.loading ? "Please Wait..." : "Submit"}</button>
+              <button className="button danger" disabled = {props.loading} onClick = {props.closeModal}>Cancel</button>
+              {!props.dontShowSubmitBtn &&<button className="button primary" disabled = {props.loading} onClick={props.onSubmit}>{props.loading ? "Please Wait..." : "Submit"}</button>}
           </div>
         </div>
       </div>

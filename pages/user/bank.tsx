@@ -57,6 +57,9 @@ export default function BankDetails() {
         router.replace("/register");
         return;
       }
+      if (banks.length > 0){
+        return
+      }
       dispatch(getUserBanks(setLoading));
     } catch (error) {
       console.log(error);

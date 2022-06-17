@@ -37,6 +37,11 @@ export default function BuyBUSD() {
   const [receiveCurrs, setReceiveInCurrs] = useState<Currency[]>([]);
 
   const [loading, setLoading] = useState(false);
+  const [amountError, setAmountError] = useState({
+    error: false,
+    text: "",
+    disabledBtn: true,
+  });
   const router = useRouter();
   const dispatch = useDispatch();
   const banks = useSelector((state: AppState) => state.banks);
@@ -63,6 +68,9 @@ export default function BuyBUSD() {
   }
 
   function getBanks() {
+    if (banks.length > 0){
+      return
+    }
     dispatch(getUserBanks(setLoading));
   }
 
@@ -73,8 +81,28 @@ export default function BuyBUSD() {
       return;
     }
     getBanks();
-    getCurrenciesFn()
+    getCurrenciesFn();
   }, []);
+
+  useEffect(() => {
+    if (
+        !state.amount ||
+        !state.bankId ||
+        !state.orderType ||
+        !state.payInCurrency ||
+      !state.receiveInCurrency || !state.walletAddress
+    ) {
+      setAmountError({
+        ...amountError,
+        disabledBtn: true
+      })
+      return
+    }
+    setAmountError({
+      ...amountError,
+      disabledBtn: false
+    })
+  }, [state]);
 
   async function getCurrenciesFn() {
     try {
@@ -103,14 +131,13 @@ export default function BuyBUSD() {
     if (state.orderType === "") {
       setPayInCurrs([]);
       setReceiveInCurrs([]);
-    setState({
-      ...state,
-      rate: "",
-    })
+      setState({
+        ...state,
+        rate: "",
+      });
       return;
     }
     if (state.orderType === "1") {
-      console.log('buy', fiatCurrs, crytoCurrs)
       getBuyRateFn("1000");
       setPayInCurrs([...fiatCurrs]);
       setReceiveInCurrs([...crytoCurrs]);
@@ -135,7 +162,6 @@ export default function BuyBUSD() {
 
   function initiateOrderFn() {
     try {
-      console.log(state);
       dispatch(initOrder(state, setLoading));
     } catch (error: any) {
       alert(error.message);
@@ -152,13 +178,17 @@ export default function BuyBUSD() {
           <form
             style={{
               width: "100%",
+              
             }}
+            className='form'
           >
             <div className="form-field">
               <label>Order Type</label>
               <select
                 value={state.orderType}
-                onChange = {(e) => setState({...state, orderType: e.target.value})}
+                onChange={(e) =>
+                  setState({ ...state, orderType: e.target.value })
+                }
                 onBlur={orderTypeOnBlurhandler}
               >
                 <option value="">Select Order type</option>
@@ -178,11 +208,11 @@ export default function BuyBUSD() {
                 }
               >
                 <option value="">Select Currency</option>
-                {
-                  payInCurrs.map((curr, index) => (
-                    <option key={index} value={curr.id}>{curr.name}</option>
-                  ))
-                }
+                {payInCurrs.map((curr, index) => (
+                  <option key={index} value={curr.name}>
+                    {curr.name}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="form-field">
@@ -197,11 +227,11 @@ export default function BuyBUSD() {
                 }
               >
                 <option value="">Select Currency</option>
-                {
-                  receiveCurrs.map((curr, index) => (
-                    <option key={index} value={curr.id}>{curr.name}</option>
-                  ))
-                }
+                {receiveCurrs.map((curr, index) => (
+                  <option key={index} value={curr.name}>
+                    {curr.name}
+                  </option>
+                ))}
               </select>
             </div>
             <div className="form-field">
@@ -237,8 +267,46 @@ export default function BuyBUSD() {
               <input
                 value={state.amount}
                 onChange={(e) => setState({ ...state, amount: e.target.value })}
+                onBlur={() => {
+                  var reg = new RegExp("^[0-9]*$");
+                  if (!reg.test(state.amount)) {
+                    setAmountError({
+                      ...amountError,
+                      error: true,
+                      text: "invalid amount",
+                    });
+                    return;
+                  }
+                  if (+state.amount > 5) {
+                    setAmountError({
+                      ...amountError,
+                      error: true,
+                      text: "Amount should not be more than 5",
+                    });
+                    return;
+                  }
+                  setAmountError({
+                    ...amountError,
+                    error: false,
+                    text: "",
+                  });
+                }}
               />
-              <p>Rate is: {state.rate}</p>
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                  width: "100%",
+                }}
+              >
+                <p>Rate is: {state.rate}</p>
+                {amountError.error && (
+                  <p style={{ color: "red", marginLeft: "auto" }}>
+                    {amountError.text}
+                  </p>
+                )}
+              </div>
             </div>
             <div className="form-field">
               <label>Wallet Address</label>
@@ -252,11 +320,7 @@ export default function BuyBUSD() {
             <button
               type="button"
               onClick={initiateOrderFn}
-              disabled={
-                !state.bankId || !state.walletAddress || !state.orderType
-                  ? true
-                  : false
-              }
+              disabled={amountError.disabledBtn}
               className="button primary"
             >
               {loading ? "Please Wait..." : "Initiate Order"}

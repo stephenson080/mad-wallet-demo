@@ -1,7 +1,7 @@
 html,
 body {
   min-height: 100%;
-  background-color: #ffffff;
+  background-color: whitesmoke
 }
 
 a {
@@ -24,6 +24,11 @@ a {
   max-width: 45rem;
   padding: 20px;
   margin: 40px auto;
+}
+
+.form {
+  background-color: white;
+  padding: 20px;
 }
 
 .form-field {
@@ -67,6 +72,7 @@ a {
   transition-duration: 0.4s;
   margin: 10px 0;
   margin-right: 15px;
+  cursor: pointer;
 }
 
 .primary {

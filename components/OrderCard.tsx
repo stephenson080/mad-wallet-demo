@@ -3,10 +3,12 @@ import { Order } from "../store/constants";
 type Props = {
   order: Order
   showViewModal : ()=> void
-  cancelOrder: () => void
+  cancelOrder?: () => void
+  loading: boolean,
+  isForTransactions?: boolean
 };
 
-export default function pendingOrder(props: Props) {
+export default function OrderCard(props: Props) {
   return (
     <table id="customers">
       <tr>
@@ -15,7 +17,7 @@ export default function pendingOrder(props: Props) {
         <th>Customer Email</th>
         <th>Amount</th>
         <th></th>
-        <th></th>
+        {!props.isForTransactions && <th></th>}
       </tr>
         <tr>
           <td>{props.order.id}</td>
@@ -23,11 +25,11 @@ export default function pendingOrder(props: Props) {
           <td>{props.order.email}</td>
           <td>{props.order.orderAmount}</td>
           <td>
-            <button onClick={props.showViewModal} className="button primary">View Order</button>
+            <button disabled = {props.loading} onClick={props.showViewModal} className="button primary">{!props.loading ? "View Order" : "Please Wait..."}</button>
           </td>
-          <td>
-            <button onClick={props.cancelOrder} className="button danger">Cancel Order</button>
-          </td>
+          {!props.isForTransactions && <td>
+            <button disabled = {props.loading} onClick={props.cancelOrder} className="button danger">{!props.loading ? "Cancel Order" : "Please Wait..."}</button>
+          </td>}
         </tr>
     </table>
   );

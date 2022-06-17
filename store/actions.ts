@@ -40,7 +40,11 @@ export function register(
       alert("User registered successfully");
       router.replace("/user/dashboard");
     } catch (error: any) {
-      alert(error.message);
+      if (error.message) {
+        alert(error.message);
+        return;
+      }
+      alert("Something went wrong: Could not add User");
       dispatch({
         type: DISPATCH_ACTIONS.SET_MESSAGE,
         payload: {
@@ -92,7 +96,11 @@ export function addBank(
       alert("Bank added successfully");
       router.replace("/user/bank");
     } catch (error: any) {
-      alert(error.message);
+      if (error.message) {
+        alert(error.message);
+        return;
+      }
+      alert("Something went wrong: Could not add Bank");
       dispatch({
         type: DISPATCH_ACTIONS.SET_MESSAGE,
         payload: {
@@ -115,7 +123,6 @@ export function getUserBanks(setLoading: Function) {
       let banks: Bank[] = [];
       const userId = getState().user?.id || localStorage.getItem("userId");
       setLoading(true);
-      console.log(userId, "KJDUIDUIS");
       const resData = await Bank.getUserBanksById(userId);
       for (let bank of resData) {
         const newBank = new Bank(
@@ -127,7 +134,6 @@ export function getUserBanks(setLoading: Function) {
         );
         banks.push(newBank);
       }
-      console.log(userId, banks, "KJDUIDUIS");
       dispatch({
         type: DISPATCH_ACTIONS.ADD_BANK,
         payload: {
@@ -141,7 +147,11 @@ export function getUserBanks(setLoading: Function) {
       });
       setLoading(false);
     } catch (error: any) {
-      alert(error.message);
+      if (error.message) {
+        alert(error.message);
+        return;
+      }
+      alert("Something went wrong: Could not get your Banks");
       dispatch({
         type: DISPATCH_ACTIONS.SET_MESSAGE,
         payload: {
@@ -177,7 +187,6 @@ export function editBank(
         bankId
       );
       const resData = await bank.editBank();
-      console.log(resData);
       dispatch({
         type: DISPATCH_ACTIONS.SET_MESSAGE,
         payload: {
@@ -192,7 +201,11 @@ export function editBank(
       alert("Bank Edited successfully");
       router.replace("/user/bank");
     } catch (error: any) {
-      alert(error.message);
+      if (error.message) {
+        alert(error.message);
+        return;
+      }
+      alert("Something went wrong: Could not edit your bank");
       dispatch({
         type: DISPATCH_ACTIONS.SET_MESSAGE,
         payload: {
@@ -276,8 +289,8 @@ export function initOrder(state: OrderState, setLoading: Function) {
           userId: userId.toString(),
           bankId: state.bankId,
           amount: +state.amount,
-          payInCurrencyCode: +state.payInCurrency,
-          receiveInCurrencyCode: +state.receiveInCurrency,
+          payInCurrencyCode: state.payInCurrency,
+          receiveInCurrencyCode: state.receiveInCurrency,
           walletAddress: state.walletAddress,
           orderType: +state.orderType,
         }),
@@ -300,7 +313,15 @@ export function initOrder(state: OrderState, setLoading: Function) {
       });
       alert("Order initiated successfully");
     } catch (error: any) {
-      alert(error.message);
+      if (error.data) {
+        alert(error.message);
+        return;
+      }
+      if (error.message) {
+        alert(error.message);
+        return;
+      }
+      alert("Something went wrong: Could not initiate your order");
       dispatch({
         type: DISPATCH_ACTIONS.SET_MESSAGE,
         payload: {
@@ -335,7 +356,10 @@ export function autoAuth(userId: string, setLoading: Function) {
       });
       setLoading(false);
     } catch (error: any) {
-      alert(error.message);
+      if (error.message) {
+        alert(error.message);
+        return;
+      }
       dispatch({
         type: DISPATCH_ACTIONS.SET_MESSAGE,
         payload: {
@@ -361,7 +385,6 @@ export async function getPendingOrder(email: string, setLoading: Function) {
       throw new Error(res.statusText);
     }
     const resData = await res.json();
-    console.log(resData);
     if (resData.data.id) {
       order = {
         id: resData.data.id,
@@ -383,7 +406,12 @@ export async function getPendingOrder(email: string, setLoading: Function) {
     setLoading(false);
     return order;
   } catch (error: any) {
-    alert(error.message);
+    if (error.message) {
+      alert(error.message);
+      return;
+    }
+
+    alert("Something went wrong: Could not get Pending Order");
   } finally {
     setLoading(false);
   }
@@ -404,7 +432,7 @@ export function confirmOrder(transactionId: string, setLoading: Function) {
         throw new Error(res.statusText);
       }
       const resData = await res.json();
-      console.log(resData);
+      alert(resData.data);
 
       dispatch({
         type: DISPATCH_ACTIONS.SET_MESSAGE,
@@ -417,7 +445,11 @@ export function confirmOrder(transactionId: string, setLoading: Function) {
         },
       });
     } catch (error: any) {
-      alert(error.message);
+      if (error.message) {
+        alert(error.message);
+        return;
+      }
+      alert("Something went wrong: Could not confirm your order");
       dispatch({
         type: DISPATCH_ACTIONS.SET_MESSAGE,
         payload: {
@@ -449,7 +481,8 @@ export function cancelOrder(transactionId: string, setLoading: Function) {
         throw new Error(res.statusText);
       }
       const resData = await res.json();
-      console.log(resData);
+
+      alert(resData.data);
 
       dispatch({
         type: DISPATCH_ACTIONS.SET_MESSAGE,
@@ -462,7 +495,11 @@ export function cancelOrder(transactionId: string, setLoading: Function) {
         },
       });
     } catch (error: any) {
-      alert(error.message);
+      if (error.message) {
+        alert(error.message);
+        return;
+      }
+      alert("Something went wrong: Could not cancel your order");
       dispatch({
         type: DISPATCH_ACTIONS.SET_MESSAGE,
         payload: {
@@ -477,4 +514,48 @@ export function cancelOrder(transactionId: string, setLoading: Function) {
       setLoading(false);
     }
   };
+}
+
+export async function getTransactions(email: string, setLoading: Function) {
+  try {
+    let orders: Order[] = []
+    setLoading(true);
+    const res = await fetch(`${BASE_URL}/xendBridge/allTransactions/${email}`);
+    if (!res.ok) {
+      throw new Error(res.statusText);
+    }
+    const resData = await res.json();
+    if (resData.data.length === 0){
+      return orders
+    }
+    for (let data of resData.data) {
+      const order : Order = {
+        id: data.id,
+        email: data.customer_email,
+        orderType: data.order_type,
+        orderAmount: data.order_amount,
+        bankId: data.bank_detail_id,
+        userId: data.xend_bridge_user_id,
+        details: {
+          payInCurr: data.pay_in_currency_code,
+          receiveAmount: data.receivable_amount,
+          receiveInCurr: data.receive_in_currency_code,
+          wallet: data.wallet_address,
+          trasactionRef: data.transaction_ref,
+          xb_transactionRef:data.xend_bridge_transaction_ref,
+        },
+      };
+      orders.push(order)
+    }
+    return orders;
+  } catch (error: any) {
+    if (error.message) {
+      alert(error.message);
+      return;
+    }
+
+    alert("Something went wrong: Could not get Pending Order");
+  } finally {
+    setLoading(false);
+  }
 }

@@ -6,7 +6,7 @@ import BankNotic from "../../components/BankNotic";
 
 import { autoAuth, getPendingOrder, getUserBanks, confirmOrder, cancelOrder } from "../../store/actions";
 import { AppState, Order } from "../../store/constants";
-import PendingOrder from "../../components/PendingOrder";
+import OrderCard from "../../components/OrderCard";
 import Orderdetails from "../../components/OrderDetails";
 export default function Dashboard() {
   const [loading, setLoading] = useState(false);
@@ -19,7 +19,10 @@ export default function Dashboard() {
   const banks = useSelector((state: AppState) => state.banks);
   useEffect(() => {
     if (user) {
-      getUserBanks(setLoading)
+      if (banks.length > 0){
+        return
+      }
+      dispatch(getUserBanks(setLoading))
       return;
     }
     const userId = localStorage.getItem("userId");
@@ -89,10 +92,10 @@ export default function Dashboard() {
       )}
 
       <div className="container">
-        <h1>Hello, {user?.userName}</h1>
-        <BankNotic />
-        <h1>Pending Order</h1>
-        {order ? <PendingOrder cancelOrder={()=> {cancelOrderFn}} showViewModal={() => setShowModal(true)} order={order} /> : <p>No Order to Show</p>}
+        <h1 style={{margin: '15px 0'}}>Hello, {user?.userName}</h1>
+        {banks.length <= 0 && <BankNotic />}
+        <h4 style={{margin: '15px 0'}}>Pending Order</h4>
+        {order ? <OrderCard loading = {loading} cancelOrder={cancelOrderFn} showViewModal={() => setShowModal(true)} order={order} /> : <p>No Order to Show</p>}
       </div>
     </>
   );
