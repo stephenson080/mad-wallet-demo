@@ -1,7 +1,7 @@
 import Bank from "../models/bank";
 import User from "../models/user";
 
-export const BASE_URL = "https://8c85-46-252-108-247.eu.ngrok.io";
+export const BASE_URL = "https://a2aa-94-79-75-90.eu.ngrok.io";
 export const HEADERS = {
     "Content-Type": "application/json",
   // "Access-Control-Allow-Origin": "*",
